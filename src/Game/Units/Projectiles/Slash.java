@@ -15,6 +15,8 @@ public class Slash extends Projectile{
 		}catch(IOException e){
 			e.printStackTrace();
 		}
+		xPos=owner.xPos+Math.cos(rotation)*owner.size;
+		yPos=owner.yPos+Math.sin(rotation)*owner.size;
 		life=time;
 		this.rotation=rotation;
 		this.owner=owner;

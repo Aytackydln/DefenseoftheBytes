@@ -16,10 +16,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Player extends UnitBase{
-	int size=50;
+	public int size=50;
 	double attackTime=1.3;
 	double attackWait;
 	public ArrayList<Projectile> projectiles=new ArrayList<>();
+	public ArrayList<Projectile> projectileRemover=new ArrayList<>();
 
 
 	public Player(int x, int y){
@@ -46,7 +47,8 @@ public class Player extends UnitBase{
 		Main.engine.camera.moveTo(xPos-300,yPos-150);
 
 		rotation=Math.atan2(Main.engine.mouseY-yPos+Main.engine.camera.yPos,Main.engine.mouseX-xPos+Main.engine.camera.xPos);
-
+		for(Projectile p:projectiles)p.tick(delta);
+		for(Projectile p:projectileRemover)projectiles.remove(p);
 	}
 
 	@Override
@@ -57,7 +59,7 @@ public class Player extends UnitBase{
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.drawImage(image,transform,null);
 		g.drawOval(Engine.engine.scaleX(xPos-size/2), Engine.engine.scaleY(yPos-size/2), Engine.engine.scaleSizeX(size), Engine.engine.scaleSizeY(size));
-
+		for(Projectile p:projectiles)p.render(g);
 	}
 	public void spawnProjectile(Projectile proj){
 		projectiles.add(proj);
