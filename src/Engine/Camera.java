@@ -1,7 +1,7 @@
 package Engine;
 
 public class Camera{
-	long xPos, yPos;
+	public double xPos, yPos;
 	float viewScale=1f;
 
 	Camera(long xPos, long yPos){
@@ -9,13 +9,13 @@ public class Camera{
 		this.yPos=yPos;
 	}
 
-	public void moveTo(long x, long y){
+	public void moveTo(double x, double y){
 		this.xPos=x;
 		this.yPos=y;
 		Engine.engine.updateScales();
 	}
 
-	public void move(long x, long y){
+	public void move(double x, double y){
 		xPos+=x;
 		yPos+=y;
 		Engine.engine.updateScales();

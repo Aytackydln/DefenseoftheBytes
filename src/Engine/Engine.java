@@ -19,37 +19,30 @@ import java.util.*;
 import java.util.List;
 
 
-public abstract class Engine extends JPanel implements KeyListener, ActionListener, ItemListener{
+public abstract class Engine extends JPanel implements KeyListener, ActionListener, ItemListener, MouseMotionListener{
 	protected static boolean run=true;
+	protected boolean showStats=true;
 	public static Engine engine;
-	public final static Set<Integer> pressed=new TreeSet<>();
-
-	public static int width=1200;
-	public static int height=800;
-	static final double maxDelta=0.02091;    //as seconds
-	public static double delta=0;    //as seconds
-	static int sleepTime=0;    //as miliseconds, dynamically change for code intensity
-
 	protected final JFrame frame;
 
-	private static long lastUpdateTime=System.nanoTime();
-	private static long previousUpdateTime=System.nanoTime();
-	private static int GAME_HERTZ=128;
-	private static long TIME_BETWEEN_UPDATES=1000000000/GAME_HERTZ;
-	static private int target_fps=64;
-	private static long TARGET_TIME_BETWEEN_RENDERS=1000000000/target_fps;
-	private static long lastRenderTime=0;
-	private final int firstW;
-	private final int firstH;
-	public int fps=0;
-	public int ups=0;
-	private double scaleX=width/1200;
-	private double scaleY=width/800;
-	private int topInset, rightInset;
-	private int frameCount=0;
-	private int updateCount=0;
-
+	public final static Set<Integer> pressed=new TreeSet<>();
 	protected static ArrayList<String> variables=new ArrayList<>();
+	public int mouseX, mouseY;
+
+	private final int firstW, firstH;
+	public static int width, height;
+	public int fps, ups;
+	private double scaleX, scaleY;
+	private int topInset, rightInset;
+
+	private static int gameHertz=128;
+	static private int target_fps=64;
+	long tımeBetweenUpdates=1000000000/gameHertz;
+	long targetTımeBetweenRenders=1000000000/target_fps;
+	static final double maxDelta=0.02091;    //as seconds
+	public static double delta=0;    		//as seconds
+	static int sleepTime=0;    				//as miliseconds, dynamically change depending on code intensity
+	private int frameCount, updateCount;
 
 	private JMenuBar menuBar;
 	protected JMenu menu1; //Game
@@ -58,12 +51,11 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	private JMenuItem m21; //Show stats
 	public ArrayList<Resolution> resolutionObjs=new ArrayList<>();
 
-	protected boolean showStats=true;
 	public static Random rng=new Random();
 	private ArrayList<Text> texts=new ArrayList<>();
 
-	Map map=new Map();
-	Camera camera=new Camera(0, 0);
+	protected Map map=new Map();
+	public Camera camera=new Camera(0, 0);
 
 	public Engine(){
 		System.setProperty("sun.java2d.opengl", "true");
@@ -84,9 +76,8 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		});
 		frame.setResizable(false);
 		JPanel contPane=new JPanel(new BorderLayout());
-		System.out.println(frame.getGraphicsConfiguration().getBufferCapabilities().isPageFlipping());
 
-
+		//determine sizes of window borders
 		frame.pack();
 		topInset=frame.getInsets().top+frame.getInsets().bottom;
 		rightInset=frame.getInsets().right+frame.getInsets().left;
@@ -101,42 +92,29 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 			firstW=resolutionObjs.get(0).width;
 			firstH=resolutionObjs.get(0).height;
 		}
-
-
 		System.out.println("first Width: "+firstW+" first height: "+firstH);
 
-		scaleX=width/firstW;
-		scaleY=height/firstH;
-
-		//System.out.println("x scale: "+scaleX());
-		//System.out.println("y scale: "+scaleY());
-
 		frame.setJMenuBar(menuBarimiz());
-		frame.setContentPane(contPane);    //TODO
+		frame.setContentPane(contPane);
 		menuBar.setVisible(false);
+
+		setFrame(firstW,firstH);
 
 		setLayout(null);
 		setSize(width, height);
 		setLocation(0, 0);
 		addKeyListener(this);
+		addMouseMotionListener(this);
 		setBackground(Color.BLACK);
 		setFocusable(true);
 		requestFocusInWindow();
-
-
-		System.out.println("sup created");
 	}
 
 	private static double scaleX(){
 		return engine.scaleX;
 	}
 
-	public void initialize(){
-		setFrame(20, 20);
-		readSett();
-	}
-
-	private void readSett(){//TODO
+	private void readSett(){
 		System.out.println("reading settings");
 		try{
 			List<String> readSettings=Files.readAllLines(Paths.get("settings.txt"));
@@ -165,26 +143,6 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 			}
 		}
 	}
-
-	protected abstract void gameCodes();
-
-	protected abstract void reset();
-
-	/**
-	 * ?ref=new JMenuItem("?buttonName");
-	 * ?ref.addActionListener(this);
-	 * menu1.add(?ref);
-	 */
-	protected abstract void menuBar();
-
-	protected abstract void actions(ActionEvent e);
-
-	/**
-	 * add resolutions as:
-	 * resolutions.add("?width*?height")
-	 * each resolution should be at same ratio
-	 */
-	public abstract void resolutions();
 
 	public void saveConf() throws IllegalAccessException{
 		String s="";
@@ -216,19 +174,19 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 			g.drawString("FPS: "+fps+"    UPS:"+ups, 5, 10);
 		}
 		for(Text t : texts) t.render(g);
+		for(Unit u:map.staticUnits)u.render(g);
+		draw(g);
 	}
 
-	public void keyTyped(KeyEvent e){}
-
 	public void run(){
-		initialize();
+		readSett();
 
+		long lastUpdateTime=System.nanoTime();
+		long previousUpdateTime;
+		long lastRenderTime=0;
 
-		/*GLCanvas.getDrawableComponent().add(this);
-		GLCanvas.setVisible(true);*/
 		frame.add(this);
 		frame.setVisible(true);
-
 
 		new TimedEvent(500){
 			@Override
@@ -244,9 +202,8 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 			}
 		}.start(); //fps and ups updater
 		// Game loop
-		//GLCanvas.paint(getGraphics());
 		while(run){
-			if(System.nanoTime()-lastUpdateTime>=TIME_BETWEEN_UPDATES){
+			if(System.nanoTime()-lastUpdateTime>=tımeBetweenUpdates){
 				if(delta>maxDelta){
 					System.out.println("latency detected "+delta);
 					delta=maxDelta;
@@ -256,16 +213,15 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 				gameCodes();
 				//delta=(System.nanoTime()-(double) previousUpdateTime)/1000000000;
 				updateCount++;
-				if(System.nanoTime()-lastRenderTime>=TARGET_TIME_BETWEEN_RENDERS){
+				if(System.nanoTime()-lastRenderTime>=targetTımeBetweenRenders){
 					lastRenderTime=lastUpdateTime;
 					frame.repaint();
-					//GLCanvas.paint(getGraphics());
 					frameCount++;
 				}
 				delta=(System.nanoTime()-(double) previousUpdateTime)/1000000000;
 
-				//sleepTime=(int)TIME_BETWEEN_UPDATES/1000000;
-				sleepTime=(int) (TIME_BETWEEN_UPDATES*2/1000000-delta*1000);
+				//sleepTime=(int)tımeBetweenUpdates/1000000;
+				sleepTime=(int) (tımeBetweenUpdates*2/1000000-delta*1000);
 				if(sleepTime>20) sleepTime=19;
 				try{
 					Thread.sleep(sleepTime, 0);
@@ -280,65 +236,27 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		}
 	}
 
-	public void keyPressed(KeyEvent e){
-		Integer a=e.getKeyCode();
-		pressed.add(a);
-		if(a=='K'){
-			if(!menuBar.isVisible()){
-				menuBar.setVisible(true);
-				setFrame(width+1, height+menuBar.getHeight());
-			}
-		}
-		else if(a=='L'){
-			if(menuBar.isVisible()){
-				menuBar.setVisible(false);
-				setFrame(width-1, height-menuBar.getHeight());
-			}
-		}else if(a==KeyEvent.VK_NUMPAD6) camera.move(2, 0);
-		else if(a==KeyEvent.VK_NUMPAD4) camera.move(-2, 0);
-		else if(a==KeyEvent.VK_NUMPAD8) camera.move(0, -2);
-		else if(a==KeyEvent.VK_NUMPAD2) camera.move(0, 2);
-		else if(a==KeyEvent.VK_NUMPAD9) camera.chanceScale(0.04f);
-		else if(a==KeyEvent.VK_NUMPAD3) camera.chanceScale(-0.04f);
-	}
-
-	public void keyReleased(KeyEvent e){
-		pressed.remove(e.getKeyCode());
-	}
-
-	public void itemStateChanged(ItemEvent e){
-		JMenuItem source=(JMenuItem) (e.getSource());
-	}
-
 	public static void main(){
-		System.out.println("you must run implemented class");
-	}
-
-	public void actionPerformed(ActionEvent e){
-		System.out.println("pressed something");
-		if((e.getSource())==m21){
-			System.out.println("show stats");
-			showStats=!showStats;
-		}else if((e.getSource())==m11){
-			reset();
-		}else actions(e);
+		System.out.println("you must ivoke run() from implemented class");
 	}
 
 	private JMenuBar menuBarimiz(){
 		menuBar=new JMenuBar();
 		menu1=new JMenu("Game");
 		menu2=new JMenu("Engine");
-		m11=new JMenuItem("Reset");
-		m21=new JMenuItem("Show Stats");
 
-		m21.addActionListener(this);
+		m11=new JMenuItem("Reset");
 		m11.addActionListener(this);
+		m21=new JMenuItem("Show Stats");
+		m21.addActionListener(this);
+
 
 		menu1.add(m11);
+
 		menu2.add(m21);
 		menu2.addSeparator();
 		menu2.add("Resolution:");
-		for(JMenuItem i : resolutionObjs){
+		for(JMenuItem i : resolutionObjs){	//resolutions need to be at seperate list to be set by Game class.
 			i.addActionListener(this);
 			menu2.add(i);
 		}
@@ -351,6 +269,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		new Fps(128);
 		new Fps(64);
 		new Fps(52);
+
 		menuBar.add(menu1);
 		menuBar.add(menu2);
 		menuBar();
@@ -388,15 +307,15 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 
 	public void setFps(int fps){
 		target_fps=fps;
-		TARGET_TIME_BETWEEN_RENDERS=1000000000/target_fps;
+		targetTımeBetweenRenders=1000000000/target_fps;
 		System.out.println(fps+" fps");
 	}
 
 	public void setUps(int ups){
-		GAME_HERTZ=ups;
-		TIME_BETWEEN_UPDATES=1000000000/GAME_HERTZ;
+		gameHertz=ups;
+		tımeBetweenUpdates=1000000000/gameHertz;
 		System.out.println(ups+" ups");
-		System.out.println("wait time: "+TIME_BETWEEN_UPDATES);
+		System.out.println("wait time: "+tımeBetweenUpdates);
 	}
 
 	public void setFrame(int x, int y){
@@ -413,4 +332,81 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	public void removeText(String identity){
 		for(Text t:texts)if(t.identity.equals(identity))texts.remove(t);
 	}
+
+	@Override
+	public void keyPressed(KeyEvent e){
+		Integer a=e.getKeyCode();
+		pressed.add(a);
+		if(a=='K'){
+			if(!menuBar.isVisible()){
+				menuBar.setVisible(true);
+				setFrame(width+1, height+menuBar.getHeight());
+			}
+		}
+		else if(a=='L'){
+			if(menuBar.isVisible()){
+				menuBar.setVisible(false);
+				setFrame(width-1, height-menuBar.getHeight());
+			}
+		}else if(a==KeyEvent.VK_NUMPAD6) camera.move(2, 0);
+		else if(a==KeyEvent.VK_NUMPAD4) camera.move(-2, 0);
+		else if(a==KeyEvent.VK_NUMPAD8) camera.move(0, -2);
+		else if(a==KeyEvent.VK_NUMPAD2) camera.move(0, 2);
+		else if(a==KeyEvent.VK_NUMPAD9) camera.chanceScale(0.04f);
+		else if(a==KeyEvent.VK_NUMPAD3) camera.chanceScale(-0.04f);
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e){
+		pressed.remove(e.getKeyCode());
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e){}
+
+	@Override
+	public void itemStateChanged(ItemEvent e){
+		JMenuItem source=(JMenuItem) (e.getSource());
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e){
+		System.out.println("pressed something");
+		if((e.getSource())==m21){
+			System.out.println("show stats");
+			showStats=!showStats;
+		}else if((e.getSource())==m11){
+			reset();
+		}else actions(e);
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e){
+		mouseX=e.getX();
+		mouseY=e.getY();
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent e){
+	}
+
+
+	protected abstract void gameCodes();
+	protected abstract void reset();
+
+	/**
+	 * add resolutions as:
+	 * new Resolution(int width,int height)
+	 * each resolution should be at same ratio
+	 */
+	public abstract void resolutions();
+
+	/**
+	 * ?ref=new JMenuItem("?buttonName");
+	 * ?ref.addActionListener(this);
+	 * menu1.add(?ref);
+	 */
+	protected abstract void menuBar();
+	protected abstract void actions(ActionEvent e);
+	protected abstract void draw(Graphics g);
 }
