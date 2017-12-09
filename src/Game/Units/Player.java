@@ -43,9 +43,13 @@ public class Player extends UnitBase{
 		if(Main.pressed.contains(KeyEvent.VK_W))yPos-=ySpeed*delta;
 		if(Main.pressed.contains(KeyEvent.VK_D))xPos+=xSpeed*delta;
 		if(Main.pressed.contains(KeyEvent.VK_A))xPos-=xSpeed*delta;
-		if(Main.pressed.contains(KeyEvent.VK_SPACE)&&attackWait<=0)spawnProjectile(new Slash(this,2,rotation));
+		if(Main.pressed.contains(KeyEvent.VK_SPACE)&&attackWait<=0){
+			spawnProjectile(new Slash(this, 2, rotation));
+			attackWait=attackTime;
+		}
 		Main.engine.camera.moveTo(xPos-300,yPos-150);
 
+		attackWait-=delta;
 		rotation=Math.atan2(Main.engine.mouseY-yPos+Main.engine.camera.yPos,Main.engine.mouseX-xPos+Main.engine.camera.xPos);
 		for(Projectile p:projectiles)p.tick(delta);
 		for(Projectile p:projectileRemover)projectiles.remove(p);
