@@ -1,10 +1,13 @@
 package Game;
 
 import Engine.*;
+import Engine.MenuItems.GameButton;
 import Engine.MenuItems.Resolution;
 import Game.Maps.TutorialMap;
 import Game.Units.Player;
 
+import javax.swing.*;
+import javax.swing.plaf.OptionPaneUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
@@ -18,14 +21,15 @@ public class Main extends Engine{
 
 	Main(){
 		main=this;
-		player=new Player(25,25);
 		map=new TutorialMap();
+		player=new Player(map,25,25);
 	}
 
 	@Override
 	protected void gameCodes(){
 		for(Unit u:map.staticUnits)u.tick(delta);
 		player.tick(delta);
+		map.tick(delta);
 	}
 
 	@Override
@@ -35,7 +39,12 @@ public class Main extends Engine{
 
 	@Override
 	protected void menuBar(){
-
+		new GameButton("Set name:"){
+			@Override
+			public void buttonAction(){
+				player.name=JOptionPane.showInputDialog("name?");
+			}
+		};
 	}
 
 	@Override
@@ -45,11 +54,13 @@ public class Main extends Engine{
 
 	@Override
 	protected void draw(Graphics g){
+		map.render(g);
 		player.render(g);
 	}
 
 	@Override
 	public void resolutions(){
 		new Resolution(600,450);
+		new Resolution(800,600);
 	}
 }

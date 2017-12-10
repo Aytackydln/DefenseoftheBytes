@@ -5,12 +5,15 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 public class Unit{
+	public Map map;
 	public double xPos,yPos;
+	public int size;
 	protected long SPEED=0;
 	protected double xSpeed,ySpeed;
-	protected double rotation;
+	public double rotation;
 	protected BufferedImage image;
 	protected AffineTransform transform=new AffineTransform();
+	public boolean collides=true;
 
 	public void tick(double delta){
 
@@ -18,9 +21,26 @@ public class Unit{
 
 	public void render(Graphics g){
 
-		transform.setToRotation(rotation, Engine.engine.scaleX(xPos),Engine.engine.scaleY(yPos));
-		transform.translate(Engine.engine.scaleX(xPos-image.getWidth()/2),Engine.engine.scaleY(yPos-image.getHeight()/2));
+
+		transform.setToScale(1,1);
+		transform.setToRotation(rotation, Camera.cam.screenXPos(xPos),Camera.cam.screenYPos(yPos));
+		transform.translate(Camera.cam.screenXPos(xPos-image.getWidth()/2),Camera.cam.screenYPos(yPos-image.getHeight()/2));
+		transform.scale(Camera.cam.screenXScale(),Camera.cam.screenYScale());
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.drawImage(image,transform,null);
+	}
+	public Unit(Map map, double xPos, double yPos){
+		this.map=map;
+		map.unitsToAdd.add(this);
+		this.xPos=xPos;
+		this.yPos=yPos;
+	}
+
+	public void die(){
+		map.unitsToRemove.add(this);
+	}
+
+	public void collide(Unit u){
+
 	}
 }

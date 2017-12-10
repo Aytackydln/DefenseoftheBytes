@@ -29,11 +29,11 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	protected static ArrayList<String> variables=new ArrayList<>();
 	public int mouseX, mouseY;
 
-	private final int firstW, firstH;
+
 	public static int width, height;
 	public int fps, ups;
-	private double scaleX, scaleY;
-	private int topInset, rightInset;
+
+	public static int topInset, rightInset;
 
 	private static int gameHertz=128;
 	static private int target_fps=64;
@@ -44,8 +44,8 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	static int sleepTime=0;    				//as miliseconds, dynamically change depending on code intensity
 	private int frameCount, updateCount;
 
-	private JMenuBar menuBar;
-	protected JMenu menu1; //Game
+	JMenuBar menuBar;
+	public JMenu menu1; //Game
 	public JMenu menu2;	//Engine
 	private JMenuItem m11; //reset
 	private JMenuItem m21; //Show stats
@@ -55,7 +55,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	private ArrayList<Text> texts=new ArrayList<>();
 
 	protected Map map=new Map();
-	public Camera camera=new Camera(0, 0);
+	public final Camera camera;
 
 	public Engine(){
 		System.setProperty("sun.java2d.opengl", "true");
@@ -82,6 +82,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		topInset=frame.getInsets().top+frame.getInsets().bottom;
 		rightInset=frame.getInsets().right+frame.getInsets().left;
 
+		int firstW,firstH;
 		resolutions();  //abstract
 		if(resolutionObjs.size()==0){
 			System.out.println("no resolutions specified!");
@@ -98,6 +99,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		frame.setContentPane(contPane);
 		menuBar.setVisible(false);
 
+		camera=new Camera(this,0, 0,firstW,firstH);
 		setFrame(firstW,firstH);
 
 		setLayout(null);
@@ -108,10 +110,6 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		setBackground(Color.BLACK);
 		setFocusable(true);
 		requestFocusInWindow();
-	}
-
-	private static double scaleX(){
-		return engine.scaleX;
 	}
 
 	private void readSett(){
@@ -276,35 +274,6 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		return menuBar;
 	}
 
-	private double scaleY(){
-		return scaleY;
-	}
-
-	public double scaleSize(){
-		return scaleX;
-	}
-
-	public int scaleSizeX(double a){
-		return (int) (a*scaleX);
-	}
-	public int scaleSizeY(double a){
-		return (int) (a*scaleY);
-	}
-	public int scaleX(double a){
-		return (int) ((a-camera.xPos)*scaleX);
-	}
-	public int scaleY(double a){
-		return (int) ((a-camera.yPos)*scaleY);
-	}
-
-	public void updateScales(){
-		if(menuBar.isVisible()) scaleY=(height-menuBar.getHeight()-topInset)/(firstH*camera.viewScale);
-		else scaleY=height/(firstH*camera.viewScale);
-
-		if(menuBar.isVisible()) scaleX=(width-1)/(firstW*camera.viewScale);
-		else scaleX=width/(firstW*camera.viewScale);
-	}
-
 	public void setFps(int fps){
 		target_fps=fps;
 		targetTımeBetweenRenders=1000000000/target_fps;
@@ -322,7 +291,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		width=x;
 		height=y;
 		frame.setSize(width+rightInset, height+topInset);
-		updateScales();
+		camera.updateScales();
 
 	}
 
@@ -389,7 +358,6 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	@Override
 	public void mouseDragged(MouseEvent e){
 	}
-
 
 	protected abstract void gameCodes();
 	protected abstract void reset();
