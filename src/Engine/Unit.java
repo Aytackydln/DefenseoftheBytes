@@ -43,4 +43,11 @@ public class Unit{
 	public void collide(Unit u){
 
 	}
+
+	public int getScreenXPos(){
+		return Camera.cam.screenXPos(xPos);
+	}
+	public int getScreenYPos(){
+		return Camera.cam.screenYPos(yPos);
+	}
 }

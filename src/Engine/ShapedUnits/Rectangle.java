@@ -15,10 +15,8 @@ public class Rectangle extends Unit{
 
 	@Override
 	public void render(Graphics g){
-		int x1=Camera.cam.screenXPos(xPos);
-		int y1=Camera.cam.screenYPos(yPos);
 		int x2=Camera.cam.screenXSize(lengthX);
 		int y2=Camera.cam.screenYSize(lengthY);
-		g.drawRect(x1,y1,x2,y2);
+		g.drawRect(getScreenXPos(),getScreenYPos(),x2,y2);
 	}
 }

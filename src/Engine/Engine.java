@@ -19,21 +19,20 @@ import java.util.*;
 import java.util.List;
 
 
-public abstract class Engine extends JPanel implements KeyListener, ActionListener, ItemListener, MouseMotionListener{
+public abstract class Engine extends JPanel implements KeyListener, ActionListener, ItemListener, MouseListener, MouseMotionListener{
 	protected static boolean run=true;
 	protected boolean showStats=true;
 	public static Engine engine;
 	protected final JFrame frame;
 
+	//inputs
 	public final static Set<Integer> pressed=new TreeSet<>();
-	protected static ArrayList<String> variables=new ArrayList<>();
+	public static boolean clicked=false;
 	public int mouseX, mouseY;
 
 
-	public static int width, height;
+	protected static ArrayList<String> variables=new ArrayList<>();
 	public int fps, ups;
-
-	public static int topInset, rightInset;
 
 	private static int gameHertz=128;
 	static private int target_fps=64;
@@ -50,11 +49,12 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	private JMenuItem m11; //reset
 	private JMenuItem m21; //Show stats
 	public ArrayList<Resolution> resolutionObjs=new ArrayList<>();
+	public static int topInset, rightInset;
 
 	public static Random rng=new Random();
 	private ArrayList<Text> texts=new ArrayList<>();
 
-	protected Map map=new Map();
+	protected Map map=new Map(200,300);
 	public final Camera camera;
 
 	public Engine(){
@@ -65,8 +65,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		engine=this;
 		variables.addAll(new ArrayList<>(Arrays.asList("fps", "ups")));
 
-		frame=new JFrame("Football");
-		frame.setSize(width+5, height+30);
+		frame=new JFrame("ByteEngine");
 		frame.setLocation(200, 20);
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -77,37 +76,31 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 			}
 		});
 		frame.setResizable(false);
-		JPanel contPane=new JPanel(new BorderLayout());
 
 		//determine sizes of window borders
 		frame.pack();
 		topInset=frame.getInsets().top+frame.getInsets().bottom;
 		rightInset=frame.getInsets().right+frame.getInsets().left;
 
-		int firstW,firstH;
 		resolutions();  //abstract
-		if(resolutionObjs.size()==0){
-			System.out.println("no resolutions specified!");
-			firstW=20;
-			firstH=20;
-		}
-		else{
-			firstW=resolutionObjs.get(0).width;
-			firstH=resolutionObjs.get(0).height;
-		}
-		System.out.println("first Width: "+firstW+" first height: "+firstH);
 
 		frame.setJMenuBar(menuBarimiz());
-		frame.setContentPane(contPane);
 		menuBar.setVisible(false);
+		camera=new Camera(this,0, 0,450);
+		if(resolutionObjs.size()==0){
+			System.out.println("no resolutions specified!");
+			setFrame(20,20);
+		}
+		else{
+			setFrame(resolutionObjs.get(0).width,resolutionObjs.get(0).height);
+		}
 
-		camera=new Camera(this,0, 0,firstW,firstH);
-		setFrame(firstW,firstH);
 
-		setLayout(null);
-		setSize(width, height);
+
+
 		setLocation(0, 0);
 		addKeyListener(this);
+		addMouseListener(this);
 		addMouseMotionListener(this);
 		setBackground(Color.BLACK);
 		setFocusable(true);
@@ -210,8 +203,10 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 				}
 				previousUpdateTime=lastUpdateTime;
 				lastUpdateTime=System.nanoTime();
+
 				gameCodes();
-				//delta=(System.nanoTime()-(double) previousUpdateTime)/1000000000;
+				clicked=false;
+
 				updateCount++;
 				if(System.nanoTime()-lastRenderTime>=targetTımeBetweenRenders){
 					lastRenderTime=lastUpdateTime;
@@ -219,8 +214,6 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 					frameCount++;
 				}
 				delta=(System.nanoTime()-(double) previousUpdateTime)/1000000000;
-
-				//sleepTime=(int)tımeBetweenUpdates/1000000;
 				sleepTime=(int) (tımeBetweenUpdates*2/1000000-delta*1000);
 				if(sleepTime>20) sleepTime=19;
 				try{
@@ -252,12 +245,10 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 
 
 		menu1.add(m11);
-
 		menu2.add(m21);
 		menu2.addSeparator();
 		menu2.add("Resolution:");
 		for(JMenuItem i : resolutionObjs){	//resolutions need to be at seperate list to be set by Game class.
-			i.addActionListener(this);
 			menu2.add(i);
 		}
 		menu2.addSeparator();
@@ -290,9 +281,9 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	}
 
 	public void setFrame(int x, int y){
-		width=x;
-		height=y;
-		frame.setSize(width+rightInset, height+topInset);
+		Camera.width=x;
+		Camera.height=y;
+		frame.setSize(Camera.width+rightInset, Camera.height+topInset);
 		camera.updateScales();
 
 	}
@@ -311,20 +302,20 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		if(a=='K'){
 			if(!menuBar.isVisible()){
 				menuBar.setVisible(true);
-				setFrame(width+1, height+menuBar.getHeight());
+				setFrame(Camera.width, Camera.height+menuBar.getHeight());
 			}
 		}
 		else if(a=='L'){
 			if(menuBar.isVisible()){
 				menuBar.setVisible(false);
-				setFrame(width-1, height-menuBar.getHeight());
+				setFrame(Camera.width, Camera.height-menuBar.getHeight());
 			}
 		}else if(a==KeyEvent.VK_NUMPAD6) camera.move(2, 0);
 		else if(a==KeyEvent.VK_NUMPAD4) camera.move(-2, 0);
 		else if(a==KeyEvent.VK_NUMPAD8) camera.move(0, -2);
 		else if(a==KeyEvent.VK_NUMPAD2) camera.move(0, 2);
-		else if(a==KeyEvent.VK_NUMPAD9) camera.chanceScale(0.04f);
-		else if(a==KeyEvent.VK_NUMPAD3) camera.chanceScale(-0.04f);
+		else if(a==KeyEvent.VK_NUMPAD9) camera.chanceScale(5);
+		else if(a==KeyEvent.VK_NUMPAD3) camera.chanceScale(-5);
 	}
 
 	@Override
@@ -352,14 +343,30 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	}
 
 	@Override
+	public void mouseClicked(MouseEvent e){
+		clicked=true;
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent e){
+		clicked=true;
+		mouseX=e.getX();
+		mouseY=e.getY();
+	}
+	@Override
 	public void mouseMoved(MouseEvent e){
 		mouseX=e.getX();
 		mouseY=e.getY();
 	}
 
 	@Override
-	public void mouseDragged(MouseEvent e){
-	}
+	public void mouseEntered(MouseEvent e){}
+	@Override
+	public void mouseExited(MouseEvent e){}
+	@Override
+	public void mousePressed(MouseEvent e){}
+	@Override
+	public void mouseReleased(MouseEvent e){}
 
 	protected abstract void gameCodes();
 	protected abstract void reset();

@@ -27,7 +27,7 @@ public class Arrow extends Projectile{
 
 	@Override
 	public void collide(Unit u){
-		if(u!=owner&&!hits.contains(u)){
+		if(u!=owner&&!hits.contains(u)&&!(u instanceof Arrow)){
 			xSpeed=0;
 			ySpeed=0;
 			life=0.4;

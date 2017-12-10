@@ -6,12 +6,14 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class Map{
-	int width=250, height=250;
+	public int width=250, height=250;
 	public final ArrayList<Unit> staticUnits=new ArrayList<>();
 	public final ArrayList<Unit> unitsToAdd=new ArrayList<>();
 	public final ArrayList<Unit> units=new ArrayList<>();
 	public final ArrayList<Unit> unitsToRemove=new ArrayList<>();
-	public Map(){
+	public Map(int width, int height){
+		this.width=width;
+		this.height=height;
 		staticUnits.add(new Rectangle(this,-width/2,-height/2,width,height));
 		units.removeAll(staticUnits);
 	}

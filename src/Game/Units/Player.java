@@ -47,15 +47,15 @@ public class Player extends UnitBase{
 			attackWait=attackTime;
 		}
 
-		if(Main.pressed.contains(KeyEvent.VK_1)&&attackWait<=0){
+		if(Main.clicked&&attackWait<=0){
 			new Arrow(map,this);
 			attackWait=attackTime;
 		}
 
-		Main.engine.camera.moveTo(xPos-300,yPos-200);
+		Main.engine.camera.moveTo(xPos-Camera.width/(2*Camera.cam.viewScale),yPos-Camera.height/(2*Camera.cam.viewScale));
 
 		attackWait-=delta;
-		rotation=Math.atan2(Main.engine.mouseY-yPos+Main.engine.camera.yPos,Main.engine.mouseX-xPos+Main.engine.camera.xPos);
+		rotation=Math.atan2(Main.engine.mouseY-getScreenYPos(),Main.engine.mouseX-getScreenXPos());
 	}
 
 	@Override

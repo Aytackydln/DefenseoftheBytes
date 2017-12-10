@@ -3,16 +3,17 @@ package Engine;
 public class Camera{
 	public double xPos, yPos;
 	private double scaleX, scaleY;
-	private final int firstW, firstH;
-	double viewScale=1;
+	public double viewScale=1.0;
+	public double viewLength;
 	final Engine eng;
 	public static Camera cam;
 
-	Camera(Engine eng,long xPos, long yPos,int firstW, int firstH){
+	public static int width, height;
+
+	Camera(Engine eng,long xPos, long yPos,double viewLength){
 		cam=this;
+		this.viewLength=viewLength;
 		this.eng=eng;
-		this.firstW=firstW;
-		this.firstH=firstH;
 		this.xPos=xPos;
 		this.yPos=yPos;
 	}
@@ -20,47 +21,52 @@ public class Camera{
 	public void moveTo(double x, double y){
 		this.xPos=x;
 		this.yPos=y;
-		updateScales();
 	}
 
 	public void move(double x, double y){
 		xPos+=x;
 		yPos+=y;
-		updateScales();
 	}
 
 	public void chanceScale(double delta){
-		viewScale+=delta;
+		viewLength+=delta;
 		updateScales();
 	}
 
 
 	public double screenXScale(){
-		return scaleX;
+		return viewScale;
 	}
 
 	public double screenYScale(){
-		return scaleY;
+		return viewScale;
 	}
 
 	public int screenXSize(double a){
-		return (int) (a*scaleX);
+		return (int) (a*viewScale);
 	}
 	public int screenYSize(double a){
-		return (int) (a*scaleY);
+		return (int) (a*viewScale);
 	}
 	public int screenXPos(double a){
-		return (int) ((a-xPos)*scaleX);
+		return (int) ((a-xPos)*viewScale);
 	}
 	public int screenYPos(double a){
-		return (int) ((a-yPos)*scaleY);
+		return (int) ((a-yPos)*viewScale);
 	}
 
 	public void updateScales(){
-		if(eng.menuBar.isVisible()) scaleY=(Engine.height-eng.menuBar.getHeight()+Engine.topInset)/(firstH*viewScale);
-		else scaleY=(Engine.height+Engine.topInset)/(firstH*viewScale);
+		if(width<height){
+			viewScale=width/viewLength;
+		}else {
+			viewScale=height/viewLength;
+		}
+		if(eng.menuBar.isVisible()) scaleY=(height-eng.menuBar.getHeight()+Engine.topInset)/(viewScale);
+		else scaleY=(height+Engine.topInset)/(viewScale);
 
-		if(eng.menuBar.isVisible()) scaleX=(Engine.width+Engine.rightInset)/(firstW*viewScale);
-		else scaleX=(Engine.width+Engine.rightInset)/(firstW*viewScale);
+		if(eng.menuBar.isVisible()) scaleX=(width+Engine.rightInset)/(viewScale);
+		else scaleX=(width+Engine.rightInset)/(viewScale);
+
+		System.out.println("zoom: "+viewScale);
 	}
 }
