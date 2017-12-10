@@ -15,14 +15,20 @@ public class Main extends Engine{
 	public Player player;
 	public static Main main;
 
+	//variables to load from settings.txt
+	public String playerName;
+
 	public static void main(String[] args){
 		new Main().run();
 	}
 
 	Main(){
+		variables.add("playerName");
+		if(playerName==null)playerName="-";
 		main=this;
 		map=new TutorialMap();
 		player=new Player(map,25,25);
+		player.name=playerName;
 	}
 
 	@Override
@@ -42,14 +48,13 @@ public class Main extends Engine{
 		new GameButton("Set name:"){
 			@Override
 			public void buttonAction(){
-				player.name=JOptionPane.showInputDialog("name?");
+				String s=JOptionPane.showInputDialog("name?",playerName);
+				if(s!=null&&s.length()>0){
+					player.name=s;
+					playerName=s;
+				}
 			}
 		};
-	}
-
-	@Override
-	protected void actions(ActionEvent e){
-
 	}
 
 	@Override

@@ -58,6 +58,8 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	public final Camera camera;
 
 	public Engine(){
+
+		readSett();
 		System.setProperty("sun.java2d.opengl", "true");
 
 		engine=this;
@@ -118,11 +120,12 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 			List<String> readSettings=Files.readAllLines(Paths.get("settings.txt"));
 			String[] change;
 			for(String s : readSettings){
+
 				change=s.split("=");
 				String var=change[0];
+				try{
 				String val=change[1];
 				System.out.println("set "+var+" to "+val);
-				try{
 					this.getClass().getDeclaredField(var).set(this, val);
 				}catch(Throwable e){
 					try{
@@ -177,7 +180,6 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	}
 
 	public void run(){
-		readSett();
 
 		long lastUpdateTime=System.nanoTime();
 		long previousUpdateTime;
@@ -346,7 +348,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 			showStats=!showStats;
 		}else if((e.getSource())==m11){
 			reset();
-		}else actions(e);
+		}
 	}
 
 	@Override
@@ -375,6 +377,5 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	 * menu1.add(?ref);
 	 */
 	protected abstract void menuBar();
-	protected abstract void actions(ActionEvent e);
 	protected abstract void draw(Graphics g);
 }
