@@ -8,7 +8,7 @@ public class Unit{
 	public Map map;
 	public double xPos,yPos;
 	public int size;
-	protected long SPEED=0;
+	protected long speed=0;
 	protected double xSpeed,ySpeed;
 	public double rotation;
 	protected BufferedImage image;
@@ -49,5 +49,11 @@ public class Unit{
 	}
 	public int getScreenYPos(){
 		return Camera.cam.screenYPos(yPos);
+	}
+	public void onClick(){
+		System.out.println("Clicked on "+getClass());
+	}
+	public boolean clickHit(){
+		return Math.pow(getScreenXPos()-Engine.mouseX,2)+Math.pow(getScreenYPos()-Engine.mouseY,2)<=Math.pow(size,2);
 	}
 }

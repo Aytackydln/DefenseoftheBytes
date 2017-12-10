@@ -16,11 +16,12 @@ public class Player extends UnitBase{
 	double attackTime=1.3;
 	double attackWait;
 
-	public String name="";
+	public String name;
 
 
 	public Player(Map map, int x, int y){
 		super(map,x,y);
+		name=Main.playerName;
 
 		size=50;
 

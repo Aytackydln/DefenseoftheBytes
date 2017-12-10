@@ -21,6 +21,6 @@ public class Skeleton extends MonsterBase{
 
 	@Override
 	public void tick(double delta){
-		rotation=Math.atan2(Main.main.player.yPos-yPos,Main.main.player.xPos-xPos);
+		if(Main.player!=null)rotation=Math.atan2(Main.player.yPos-yPos,Main.player.xPos-xPos);
 	}
 }

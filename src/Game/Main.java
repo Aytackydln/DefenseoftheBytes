@@ -3,20 +3,18 @@ package Game;
 import Engine.*;
 import Engine.MenuItems.GameButton;
 import Engine.MenuItems.Resolution;
-import Game.Maps.TutorialMap;
+import Game.Maps.MainMenu;
 import Game.Units.Player;
 
 import javax.swing.*;
-import javax.swing.plaf.OptionPaneUI;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 
 public class Main extends Engine{
-	public Player player;
+	public static Player player;
 	public static Main main;
 
 	//variables to load from settings.txt
-	public String playerName;
+	public static String playerName;
 
 	public static void main(String[] args){
 		new Main().run();
@@ -24,17 +22,14 @@ public class Main extends Engine{
 
 	Main(){
 		variables.add("playerName");
-		if(playerName==null)playerName="-";
+		if(playerName==null)playerName="Nameless";
 		main=this;
-		map=new TutorialMap();
-		player=new Player(map,25,25);
-		player.name=playerName;
+		map=new MainMenu();
 	}
 
 	@Override
 	protected void gameCodes(){
 		for(Unit u:map.staticUnits)u.tick(delta);
-		player.tick(delta);
 		map.tick(delta);
 	}
 
@@ -60,7 +55,6 @@ public class Main extends Engine{
 	@Override
 	protected void draw(Graphics g){
 		map.render(g);
-		player.render(g);
 	}
 
 	@Override

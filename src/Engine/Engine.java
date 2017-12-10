@@ -28,7 +28,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	//inputs
 	public final static Set<Integer> pressed=new TreeSet<>();
 	public static boolean clicked=false;
-	public int mouseX, mouseY;
+	public static int mouseX, mouseY;
 
 
 	protected static ArrayList<String> variables=new ArrayList<>();
@@ -295,6 +295,10 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		for(Text t:texts)if(t.identity.equals(identity))texts.remove(t);
 	}
 
+	public void loadMap(Map map){
+		this.map=map;
+	}
+
 	@Override
 	public void keyPressed(KeyEvent e){
 		Integer a=e.getKeyCode();
@@ -345,6 +349,9 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	@Override
 	public void mouseClicked(MouseEvent e){
 		clicked=true;
+		for(Unit u:map.units){
+			if(u.clickHit())u.onClick();
+		}
 	}
 
 	@Override
