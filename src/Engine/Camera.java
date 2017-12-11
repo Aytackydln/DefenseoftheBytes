@@ -67,6 +67,6 @@ public class Camera{
 		if(eng.menuBar.isVisible()) scaleX=(width+Engine.rightInset)/(viewScale);
 		else scaleX=(width+Engine.rightInset)/(viewScale);
 
-		System.out.println("zoom: "+viewScale);
+		if(Engine.debug)System.out.println("zoom: "+viewScale);
 	}
 }

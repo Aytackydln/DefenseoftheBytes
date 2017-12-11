@@ -1,6 +1,7 @@
 package Engine;
 
 import Engine.ShapedUnits.Rectangle;
+import Game.Main;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -29,12 +30,18 @@ public class Map{
 		else if(y-u.size/2<-height/2)y=-height/2+u.size/2;
 
 		//Collision checks
-		double distanceSqrt;
+		double distanceSq;
 		if(u.collides)for(Unit other:units){
 			if(other!=u&&other.collides){
-				distanceSqrt=Math.pow(other.xPos-u.xPos, 2)+Math.pow(other.yPos-u.yPos, 2);
-				if(distanceSqrt<Math.pow(other.size/2+u.size/2, 2)){
+				distanceSq=Math.pow(other.xPos-x, 2)+Math.pow(other.yPos-y, 2);
+				if(distanceSq<Math.pow(other.size/2+u.size/2, 2)){
 					u.collide(other);
+					if(!u.pierces&&!other.pierces){
+						double distancetoMove=Math.sqrt(distanceSq)-(u.size+other.size)/2;
+						double angle=Math.atan2(y-other.yPos,x-other.xPos);
+						x-=Math.cos(angle)*distancetoMove;
+						y-=Math.sin(angle)*distancetoMove;
+					}
 				}
 			}
 		}

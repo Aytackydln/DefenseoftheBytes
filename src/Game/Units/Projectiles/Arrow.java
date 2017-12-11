@@ -20,18 +20,24 @@ public class Arrow extends Projectile{
 
 		size=(image.getHeight()+image.getWidth())/2;
 		life=3;
-		xSpeed=Math.cos(owner.rotation)*5;
-		ySpeed=Math.sin(owner.rotation)*5;
 		rotation=owner.rotation;
+		speed=120;
 	}
 
 	@Override
 	public void collide(Unit u){
 		if(u!=owner&&!hits.contains(u)&&!(u instanceof Arrow)){
-			xSpeed=0;
-			ySpeed=0;
-			life=0.4;
+			speed=0;
+			life=0.9;
 			hits.add(u);
 		}
+	}
+
+	@Override
+	public void tick(double delta){
+		super.tick(delta);
+
+		xSpeed=Math.cos(rotation)*speed*delta;
+		ySpeed=Math.sin(rotation)*speed*delta;
 	}
 }

@@ -14,9 +14,12 @@ public class Unit{
 	protected BufferedImage image;
 	protected AffineTransform transform=new AffineTransform();
 	public boolean collides=true;
+	public boolean pierces=false;
 
 	public void tick(double delta){
-
+		xSpeed=Math.cos(rotation)*speed*delta;
+		ySpeed=Math.sin(rotation)*speed*delta;
+		map.moveUnit(this);
 	}
 
 	public void render(Graphics g){

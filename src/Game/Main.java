@@ -20,7 +20,7 @@ public class Main extends Engine{
 		new Main().run();
 	}
 
-	Main(){
+	public Main(){
 		variables.add("playerName");
 		if(playerName==null)playerName="Nameless";
 		main=this;

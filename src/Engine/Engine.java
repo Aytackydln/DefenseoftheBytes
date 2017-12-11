@@ -21,6 +21,7 @@ import java.util.List;
 
 public abstract class Engine extends JPanel implements KeyListener, ActionListener, ItemListener, MouseListener, MouseMotionListener{
 	protected static boolean run=true;
+	public static boolean debug;
 	protected boolean showStats=true;
 	public static Engine engine;
 	protected final JFrame frame;
@@ -31,7 +32,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	public static int mouseX, mouseY;
 
 
-	protected static ArrayList<String> variables=new ArrayList<>();
+	public static ArrayList<String> variables=new ArrayList<>();
 	public int fps, ups;
 
 	private static int gameHertz=128;
@@ -63,7 +64,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		System.setProperty("sun.java2d.opengl", "true");
 
 		engine=this;
-		variables.addAll(new ArrayList<>(Arrays.asList("fps", "ups")));
+		variables.addAll(new ArrayList<>(Arrays.asList("fps", "ups", "debug")));
 
 		frame=new JFrame("ByteEngine");
 		frame.setLocation(200, 20);
@@ -108,7 +109,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	}
 
 	private void readSett(){
-		System.out.println("reading settings");
+		if(debug)System.out.println("reading settings");
 		try{
 			List<String> readSettings=Files.readAllLines(Paths.get("settings.txt"));
 			String[] change;
@@ -117,23 +118,28 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 				change=s.split("=");
 				String var=change[0];
 				try{
-				String val=change[1];
-				System.out.println("set "+var+" to "+val);
-					this.getClass().getDeclaredField(var).set(this, val);
+					String val=change[1];
+					if(var.equals("debug")){
+						if(val.equals("true"))debug=true;
+						else debug=false;
+					}else{
+						if(debug)System.out.println("set "+var+" to "+val);
+						this.getClass().getDeclaredField(var).set(this, val);
+					}
 				}catch(Throwable e){
 					try{
 						this.getClass().getField(var).get(this);
 					}catch(Throwable e1){
-						System.out.println("Could not set saved variable ("+var+")");
+						if(debug)System.out.println("Could not set saved variable ("+var+")");
 					}
 				}
 			}
 		}catch(IOException e){
 			try{
 				new Formatter("settings.txt");
-				System.out.println("settings.txt created");
+				if(debug)System.out.println("settings.txt created");
 			}catch(FileNotFoundException ignored){
-				System.out.println("Could not create settings.txt");
+				if(debug)System.out.println("Could not create settings.txt");
 			}
 		}
 	}
@@ -147,7 +153,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 				try{
 					s+=a+"="+this.getClass().getField(a).get(this)+"\n";
 				}catch(Exception e1){
-					System.out.println("There was an error saving "+a+e1);
+					if(debug)System.out.println("There was an error saving "+a+e1);
 					e1.printStackTrace();
 				}
 			}
@@ -159,7 +165,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		}
 		f.format(s);
 		f.close();
-		System.out.println("saved configs");
+		if(debug)System.out.println("saved configs");
 	}
 
 	public void paintComponent(Graphics g){
@@ -277,7 +283,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		gameHertz=ups;
 		tımeBetweenUpdates=1000000000/gameHertz;
 		System.out.println(ups+" ups");
-		System.out.println("wait time: "+tımeBetweenUpdates);
+		if(debug)System.out.println("wait time: "+tımeBetweenUpdates);
 	}
 
 	public void setFrame(int x, int y){
@@ -337,7 +343,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 
 	@Override
 	public void actionPerformed(ActionEvent e){
-		System.out.println("pressed something");
+		if(debug)System.out.println("pressed something");
 		if((e.getSource())==m21){
 			System.out.println("show stats");
 			showStats=!showStats;

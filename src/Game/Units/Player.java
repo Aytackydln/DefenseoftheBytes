@@ -11,7 +11,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 
-public class Player extends UnitBase{
+public class Player extends Unit{
 	double movementSpeed=75;
 	double attackTime=1.3;
 	double attackWait;
@@ -21,6 +21,7 @@ public class Player extends UnitBase{
 
 	public Player(Map map, int x, int y){
 		super(map,x,y);
+		Main.player=this;
 		name=Main.playerName;
 
 		size=50;

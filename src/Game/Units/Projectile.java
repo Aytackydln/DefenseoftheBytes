@@ -13,6 +13,7 @@ public class Projectile extends Unit{
 	public Projectile(Map map,Unit owner, double xPos, double yPos){
 		super(map,xPos,yPos);
 		this.owner=owner;
+		pierces=true;
 	}
 
 	@Override
