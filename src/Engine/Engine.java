@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.List;
 
 
-public abstract class Engine extends JPanel implements KeyListener, ActionListener, ItemListener, MouseListener, MouseMotionListener{
+public abstract class Engine extends JPanel {
 	protected static boolean run=true;
 	public static boolean debug;
 	protected boolean showStats=true;
@@ -30,9 +30,11 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	public final static Set<Integer> pressed=new TreeSet<>();
 	public static boolean clicked=false;
 	public static int mouseX, mouseY;
+	ComboListener comboListener=new ComboListener(this);
 
 
 	public static ArrayList<String> variables=new ArrayList<>();
+	public String settingFile="settings.txt";
 	public int fps, ups;
 
 	private static int gameHertz=128;
@@ -47,10 +49,9 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	JMenuBar menuBar;
 	public JMenu menu1; //Game
 	public JMenu menu2;	//Engine
-	private JMenuItem m11; //reset
-	private JMenuItem m21; //Show stats
+	public JMenuItem m11; //reset
+	public JMenuItem m21; //Show stats
 	public ArrayList<Resolution> resolutionObjs=new ArrayList<>();
-	public static int topInset, rightInset;
 
 	public static Random rng=new Random();
 	private ArrayList<Text> texts=new ArrayList<>();
@@ -62,32 +63,31 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 
 		readSett();
 		System.setProperty("sun.java2d.opengl", "true");
-
 		engine=this;
-		variables.addAll(new ArrayList<>(Arrays.asList("fps", "ups", "debug")));
+		variables.addAll(new ArrayList<>(Arrays.asList("debug", "fps", "ups")));
 
 		frame=new JFrame("ByteEngine");
 		frame.setLocation(200, 20);
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
+		frame.addWindowListener(new WindowAdapter() {
 			@Override
-			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+			public void windowClosing(WindowEvent windowEvent) {
 				run=false;
-				System.exit(0);
+			}
+
+		});
+		frame.addComponentListener(new ComponentAdapter(){
+			@Override
+			public void componentResized(ComponentEvent e){
+				Camera.cam.updateScales();
 			}
 		});
-		frame.setResizable(false);
 
-		//determine sizes of window borders
-		frame.pack();
-		topInset=frame.getInsets().top+frame.getInsets().bottom;
-		rightInset=frame.getInsets().right+frame.getInsets().left;
-
-		resolutions();  //abstract
+		resolutions();  //abstract TODO might delete because window is resizable
 
 		frame.setJMenuBar(menuBarimiz());
-		menuBar.setVisible(false);
-		camera=new Camera(this,0, 0,450);
+		menuBar.setVisible(true);
+		camera=new Camera(frame,0, 0,450);
 		if(resolutionObjs.size()==0){
 			System.out.println("no resolutions specified!");
 			setFrame(20,20);
@@ -96,13 +96,10 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 			setFrame(resolutionObjs.get(0).width,resolutionObjs.get(0).height);
 		}
 
-
-
-
 		setLocation(0, 0);
-		addKeyListener(this);
-		addMouseListener(this);
-		addMouseMotionListener(this);
+		addKeyListener(comboListener);
+		addMouseListener(comboListener);
+		addMouseMotionListener(comboListener);
 		setBackground(Color.BLACK);
 		setFocusable(true);
 		requestFocusInWindow();
@@ -111,7 +108,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	private void readSett(){
 		if(debug)System.out.println("reading settings");
 		try{
-			List<String> readSettings=Files.readAllLines(Paths.get("settings.txt"));
+			List<String> readSettings=Files.readAllLines(Paths.get(settingFile));
 			String[] change;
 			for(String s : readSettings){
 
@@ -136,7 +133,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 			}
 		}catch(IOException e){
 			try{
-				new Formatter("settings.txt");
+				new Formatter(settingFile);
 				if(debug)System.out.println("settings.txt created");
 			}catch(FileNotFoundException ignored){
 				if(debug)System.out.println("Could not create settings.txt");
@@ -159,7 +156,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 			}
 		Formatter f=null;
 		try{
-			f=new Formatter(new File("settings.txt"));
+			f=new Formatter(new File(settingFile));
 		}catch(FileNotFoundException e){
 			e.printStackTrace();
 		}
@@ -233,6 +230,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		}catch(IllegalAccessException e){
 			e.printStackTrace();
 		}
+		System.exit(0);
 	}
 
 	public static void main(){
@@ -245,9 +243,9 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		menu2=new JMenu("Engine");
 
 		m11=new JMenuItem("Reset");
-		m11.addActionListener(this);
+		m11.addActionListener(comboListener);
 		m21=new JMenuItem("Show Stats");
-		m21.addActionListener(this);
+		m21.addActionListener(comboListener);
 
 
 		menu1.add(m11);
@@ -289,7 +287,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 	public void setFrame(int x, int y){
 		Camera.width=x;
 		Camera.height=y;
-		frame.setSize(Camera.width+rightInset, Camera.height+topInset);
+		frame.setSize(Camera.width, Camera.height);
 		camera.updateScales();
 
 	}
@@ -305,81 +303,7 @@ public abstract class Engine extends JPanel implements KeyListener, ActionListen
 		this.map=map;
 	}
 
-	@Override
-	public void keyPressed(KeyEvent e){
-		Integer a=e.getKeyCode();
-		pressed.add(a);
-		if(a=='K'){
-			if(!menuBar.isVisible()){
-				menuBar.setVisible(true);
-				setFrame(Camera.width, Camera.height+menuBar.getHeight());
-			}
-		}
-		else if(a=='L'){
-			if(menuBar.isVisible()){
-				menuBar.setVisible(false);
-				setFrame(Camera.width, Camera.height-menuBar.getHeight());
-			}
-		}else if(a==KeyEvent.VK_NUMPAD6) camera.move(2, 0);
-		else if(a==KeyEvent.VK_NUMPAD4) camera.move(-2, 0);
-		else if(a==KeyEvent.VK_NUMPAD8) camera.move(0, -2);
-		else if(a==KeyEvent.VK_NUMPAD2) camera.move(0, 2);
-		else if(a==KeyEvent.VK_NUMPAD9) camera.chanceScale(5);
-		else if(a==KeyEvent.VK_NUMPAD3) camera.chanceScale(-5);
-	}
 
-	@Override
-	public void keyReleased(KeyEvent e){
-		pressed.remove(e.getKeyCode());
-	}
-
-	@Override
-	public void keyTyped(KeyEvent e){}
-
-	@Override
-	public void itemStateChanged(ItemEvent e){
-		JMenuItem source=(JMenuItem) (e.getSource());
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e){
-		if(debug)System.out.println("pressed something");
-		if((e.getSource())==m21){
-			System.out.println("show stats");
-			showStats=!showStats;
-		}else if((e.getSource())==m11){
-			reset();
-		}
-	}
-
-	@Override
-	public void mouseClicked(MouseEvent e){
-		clicked=true;
-		for(Unit u:map.units){
-			if(u.clickHit())u.onClick();
-		}
-	}
-
-	@Override
-	public void mouseDragged(MouseEvent e){
-		clicked=true;
-		mouseX=e.getX();
-		mouseY=e.getY();
-	}
-	@Override
-	public void mouseMoved(MouseEvent e){
-		mouseX=e.getX();
-		mouseY=e.getY();
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e){}
-	@Override
-	public void mouseExited(MouseEvent e){}
-	@Override
-	public void mousePressed(MouseEvent e){}
-	@Override
-	public void mouseReleased(MouseEvent e){}
 
 	protected abstract void gameCodes();
 	protected abstract void reset();

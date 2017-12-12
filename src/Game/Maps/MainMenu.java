@@ -21,6 +21,6 @@ public class MainMenu extends Map{
 			}
 		};
 
-		Camera.cam.moveTo(-height/2-10,-width/2-10);
+		Camera.cam.moveTo(-width/2-5,-height/2-5);
 	}
 }

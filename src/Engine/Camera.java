@@ -1,19 +1,20 @@
 package Engine;
 
+import java.awt.*;
+
 public class Camera{
 	public double xPos, yPos;
-	private double scaleX, scaleY;
 	public double viewScale=1.0;
 	public double viewLength;
-	final Engine eng;
 	public static Camera cam;
+	private final Frame frame;
 
 	public static int width, height;
 
-	Camera(Engine eng,long xPos, long yPos,double viewLength){
+	Camera(Frame frame,long xPos, long yPos, double viewLength){
+		this.frame=frame;
 		cam=this;
 		this.viewLength=viewLength;
-		this.eng=eng;
 		this.xPos=xPos;
 		this.yPos=yPos;
 	}
@@ -56,17 +57,17 @@ public class Camera{
 	}
 
 	public void updateScales(){
-		if(width<height){
-			viewScale=width/viewLength;
-		}else {
-			viewScale=height/viewLength;
+		if(getFrameWidth()<getFrameHeight()){
+			viewScale=getFrameWidth()/viewLength;
+		}else{
+			viewScale=getFrameHeight()/viewLength;
 		}
-		if(eng.menuBar.isVisible()) scaleY=(height-eng.menuBar.getHeight()+Engine.topInset)/(viewScale);
-		else scaleY=(height+Engine.topInset)/(viewScale);
+	}
 
-		if(eng.menuBar.isVisible()) scaleX=(width+Engine.rightInset)/(viewScale);
-		else scaleX=(width+Engine.rightInset)/(viewScale);
-
-		if(Engine.debug)System.out.println("zoom: "+viewScale);
+	public int getFrameWidth(){
+		return frame.getWidth();
+	}
+	public int getFrameHeight(){
+		return frame.getHeight();
 	}
 }

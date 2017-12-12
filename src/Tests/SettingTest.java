@@ -1,31 +1,50 @@
 package Tests;
 
+import Engine.Camera;
 import Engine.Map;
+import Engine.MenuItems.GameButton;
 import Engine.Unit;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.awt.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class SettingTest{
-	MockMain main;
-	Map map;
+	static MockMain main=new MockMain();
+	static Map map=new Map(250,250);
 
 	public void tickMap(int times, double delta){
 		for(int i=0;i<times;i++)map.tick(delta);
+
+		System.out.println("Engine ran for "+times*delta+" seconds with "+1/delta+" hertz");
+	}
+
+	@BeforeClass
+	public static void init(){
+		main.loadMap(map);
 	}
 
 	@Before
-	public void init(){
-		main=new MockMain();
-		map=new Map(250,250);
-		main.loadMap(map);
+	public void clear(){
+		map.units.removeAll(map.units);
+	}
+
+	@After
+	public void endTest(){
+		System.out.println();
 	}
 
 	@Test
 	public void settingTest(){
-		main.testVariable="something";
+		System.out.println("Running setting test...");
+
+		String string="something"+main.rng.nextInt(50);
+		main.testVariable=string;
 		main.variables.add("testVariable");
 		try{
 			main.saveConf();
@@ -33,38 +52,72 @@ public class SettingTest{
 			e.printStackTrace();
 		}
 		main=new MockMain();
-		assertEquals(main.testVariable,"something");
+		assertEquals("Saving/loading setting failed",string,main.testVariable);
 	}
 
 	@Test
-	public void movementTest(){
+	public void movementTest1(){
+		System.out.println("Running x-axis movement test...");
+
 		int speed=50;
 		Unit unit=new MockUnit(map,0,0,speed);
 
-		tickMap(10,0.1);	//run game for 1 seconds
-		assertEquals(unit.xPos,speed,0.01);
+		tickMap(10,0.1);	//simulate engine for 1 second
+		assertEquals("Moving along x-axis failed", speed,unit.xPos,0.001);
 	}
 
 	@Test
-	public void collisionTest1(){	//collision with map edge
+	public void movementTest2(){
+		System.out.println("Running y-axis movement test....");
+
 		int speed=50;
 		Unit unit=new MockUnit(map,0,0,speed);
-		tickMap(100,0.1);
-		assertEquals(unit.xPos,125,0.01);
-		assertEquals(unit.yPos,0,0.01);
+		unit.rotation=Math.PI/2;
+
+		tickMap(10,0.1);	//simulate engine for 1 second
+		assertEquals("Moving along y-axis failed", speed,unit.yPos,0.001);
 	}
 
 	@Test
-	public void collisionTest2(){	//collision with map edge + unit size
+	public void movementTest3(){
+		System.out.println("Running rotated-axis movement...");
+
+		int speed=50;
+		Unit unit=new MockUnit(map,0,0,speed);
+		unit.rotation=Math.PI/4;
+
+		tickMap(10,0.1);	//simulate engine for 1 second
+
+		double distance=Math.sqrt(Math.pow(unit.xPos,2)+Math.pow(unit.yPos,2));
+		assertEquals("Moving along rotated-axis failed", speed,distance,0.001);
+	}
+
+	@Test
+	public void collisionTest1(){
+		System.out.println("Running collision test against edge of the map...");
+
+		int speed=50;
+		Unit unit=new MockUnit(map,0,0,speed);
+		tickMap(100,0.1);	//simulate engine for 10 second
+		assertEquals("Map edge collision test failed", unit.xPos,125,0.01);
+		assertEquals("Map edge collision test failed", unit.yPos,0,0.01);
+	}
+
+	@Test
+	public void collisionTest2(){
+		System.out.println("Running collision test against edge of the map with unit size...");
+
 		int speed=50;
 		Unit unit=new MockUnit(map,0,0,speed);
 		unit.size=5;
-		tickMap(100,0.1);
-		assertEquals(unit.xPos,125-unit.size/2,0.01);
-		assertEquals(unit.yPos,0,0.01);
+		tickMap(100,0.1)	;//simulate engine for 10 second
+		assertEquals("Map edge collision with unit size test failed", unit.xPos,125-unit.size/2,0.01);
+		assertEquals("Map edge collision with unit size test failed", unit.yPos,0,0.01);
 	}
 	@Test
-	public void collisionTest3(){	//collision within two units
+	public void collisionTest3(){
+		System.out.println("Running collision method call test with two units...");
+
 		int speed=30;
 		final boolean[] pass={false};
 		Unit unit=new MockUnit(map,0,0,speed){
@@ -76,11 +129,14 @@ public class SettingTest{
 		unit.size=10;
 		Unit unit2=new Unit(map,50,0);
 		unit2.size=20;
-		tickMap(100,0.1);
+
+		tickMap(100,0.1);	//simulate engine for 10 second
 		assertTrue("Units did not collide", pass[0]);
 	}
 	@Test
-	public void collisionTest4(){	//collision test against non-moving unit
+	public void collisionTest4(){
+		System.out.println("Running collision movement test with two units...");
+
 		int speed=30;
 		Unit unit=new MockUnit(map,0,0,speed);
 		unit.size=10;
@@ -90,7 +146,47 @@ public class SettingTest{
 			}
 		};
 		unit2.size=20;
-		tickMap(100,0.1);
-		assertEquals(50-(unit.size+unit2.size)/2, unit.xPos,0.01);	//check if the unit stuck with other unit
+
+		tickMap(100,0.1)	;//simulate engine for 10 second
+		assertEquals("Unit coordinate is unexpected after collision", 50-(unit.size+unit2.size)/2, unit.xPos,0.01);
+	}
+
+	@Test
+	public void screenPositionTest1(){
+		System.out.println("Running screen position test...");
+
+		Unit unit=new Unit(map,30,40);
+		main.camera.viewScale=1;
+		main.camera.moveTo(0,0);
+		double distance=Math.pow(unit.xPos,2)+Math.pow(unit.yPos,2);
+		double cameraDistance=main.camera.screenXPos(Math.pow(unit.xPos,2))+main.camera.screenYPos(Math.pow(unit.yPos,2));
+		assertEquals(distance,cameraDistance,0.01);
+	}
+
+	@Test
+	public void screenPositionTest2(){
+		System.out.println("Running zoomed screen position test...");
+
+		Unit unit=new Unit(map,30,40);
+		Camera camera=main.camera;
+		camera.viewScale=2;
+		camera.moveTo(0,0);
+		double distance=Math.pow(unit.xPos,2)+Math.pow(unit.yPos,2);
+		double cameraDistance=(camera.screenXPos(Math.pow(unit.xPos,2))+camera.screenYPos(Math.pow(unit.yPos,2)));
+		assertEquals(distance,cameraDistance/camera.viewScale,0.01);
+	}
+
+	@Test
+	public void addingGameButton(){
+		System.out.println("Running add game button test...");
+		Component button=new GameButton("Test"){
+			@Override
+			public void buttonAction(){
+
+			}
+		};
+		boolean pass=false;
+		for(Component c:main.menu1.getMenuComponents())if(c==button)pass=true;
+		assertTrue("Adding game button failed", pass);
 	}
 }
