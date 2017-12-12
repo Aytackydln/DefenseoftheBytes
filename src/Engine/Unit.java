@@ -1,5 +1,7 @@
 package Engine;
 
+import Game.Main;
+
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -43,9 +45,7 @@ public class Unit{
 		map.unitsToRemove.add(this);
 	}
 
-	public void collide(Unit u){
-
-	}
+	public void collide(Unit u){}
 
 	public int getScreenXPos(){
 		return Camera.cam.screenXPos(xPos);

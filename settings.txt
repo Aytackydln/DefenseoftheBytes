@@ -1,5 +1,4 @@
-debug=false
-fps=0
-ups=0
+debug=true
+fps=64
+ups=128
 playerName=Nameless
-testVariable=something32

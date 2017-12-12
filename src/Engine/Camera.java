@@ -62,6 +62,7 @@ public class Camera{
 		}else{
 			viewScale=getFrameHeight()/viewLength;
 		}
+		if(Engine.debug) System.out.println("Zoom is now: "+viewScale);
 	}
 
 	public int getFrameWidth(){

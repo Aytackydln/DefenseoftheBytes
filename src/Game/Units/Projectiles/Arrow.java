@@ -21,7 +21,7 @@ public class Arrow extends Projectile{
 		size=(image.getHeight()+image.getWidth())/2;
 		life=3;
 		rotation=owner.rotation;
-		speed=180;
+		speed=300;
 	}
 
 	@Override

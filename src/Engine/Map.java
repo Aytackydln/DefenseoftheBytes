@@ -36,7 +36,7 @@ public class Map{
 				distanceSq=Math.pow(other.xPos-x, 2)+Math.pow(other.yPos-y, 2);
 				if(distanceSq<Math.pow(other.size/2+u.size/2, 2)){
 					u.collide(other);
-					if(!u.pierces&&!other.pierces){
+					if(!(u.pierces||other.pierces)){
 						double distancetoMove=Math.sqrt(distanceSq)-(u.size+other.size)/2;
 						double angle=Math.atan2(y-other.yPos,x-other.xPos);
 						x-=Math.cos(angle)*distancetoMove;

@@ -35,8 +35,8 @@ public abstract class Engine extends JPanel {
 
 	public static ArrayList<String> variables=new ArrayList<>();
 	public String settingFile="settings.txt";
-	public int fps, ups;
 
+	public int fps, ups;
 	private static int gameHertz=128;
 	static private int target_fps=64;
 	long tımeBetweenUpdates=1000000000/gameHertz;
@@ -82,6 +82,9 @@ public abstract class Engine extends JPanel {
 				Camera.cam.updateScales();
 			}
 		});
+		addKeyListener(comboListener);
+		addMouseListener(comboListener);
+		addMouseMotionListener(comboListener);
 
 		resolutions();  //abstract TODO might delete because window is resizable
 
@@ -96,13 +99,8 @@ public abstract class Engine extends JPanel {
 			setFrame(resolutionObjs.get(0).width,resolutionObjs.get(0).height);
 		}
 
-		setLocation(0, 0);
-		addKeyListener(comboListener);
-		addMouseListener(comboListener);
-		addMouseMotionListener(comboListener);
 		setBackground(Color.BLACK);
 		setFocusable(true);
-		requestFocusInWindow();
 	}
 
 	private void readSett(){
@@ -141,7 +139,7 @@ public abstract class Engine extends JPanel {
 		}
 	}
 
-	public void saveConf() throws IllegalAccessException{
+	public void saveConf(){
 		String s="";
 		for(String a:variables)
 			try{
@@ -165,7 +163,7 @@ public abstract class Engine extends JPanel {
 		if(debug)System.out.println("saved configs");
 	}
 
-	public void paintComponent(Graphics g){
+	protected void paintComponent(Graphics g){
 		super.paintComponent(g);
 		if(showStats){
 			g.drawString("FPS: "+fps+"    UPS:"+ups, 5, 10);
@@ -225,11 +223,7 @@ public abstract class Engine extends JPanel {
 				}
 			}
 		}
-		try{
-			saveConf();
-		}catch(IllegalAccessException e){
-			e.printStackTrace();
-		}
+		saveConf();
 		System.exit(0);
 	}
 

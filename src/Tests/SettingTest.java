@@ -46,11 +46,7 @@ public class SettingTest{
 		String string="something"+main.rng.nextInt(50);
 		main.testVariable=string;
 		main.variables.add("testVariable");
-		try{
-			main.saveConf();
-		}catch(IllegalAccessException e){
-			e.printStackTrace();
-		}
+		main.saveConf();
 		main=new MockMain();
 		assertEquals("Saving/loading setting failed",string,main.testVariable);
 	}
@@ -127,8 +123,12 @@ public class SettingTest{
 			}
 		};
 		unit.size=10;
+		unit.collides=true;
+		unit.pierces=false;
 		Unit unit2=new Unit(map,50,0);
 		unit2.size=20;
+		unit2.collides=true;
+		unit2.pierces=false;
 
 		tickMap(100,0.1);	//simulate engine for 10 second
 		assertTrue("Units did not collide", pass[0]);
@@ -140,15 +140,41 @@ public class SettingTest{
 		int speed=30;
 		Unit unit=new MockUnit(map,0,0,speed);
 		unit.size=10;
+		unit.collides=true;
+		unit.pierces=false;
 		Unit unit2=new Unit(map,50,0){
 			@Override
 			public void tick(double delta){
 			}
 		};
 		unit2.size=20;
+		unit.collides=true;
+		unit.pierces=false;
 
-		tickMap(100,0.1)	;//simulate engine for 10 second
+		tickMap(100,0.1);	//simulate engine for 10 second
 		assertEquals("Unit coordinate is unexpected after collision", 50-(unit.size+unit2.size)/2, unit.xPos,0.01);
+	}
+
+	@Test
+	public void pierceTest(){
+		System.out.println("Running pierce movement test with two units...");
+
+		int speed=30;
+		Unit unit=new MockUnit(map,0,0,speed);
+		unit.size=10;
+		unit.collides=true;
+		unit.pierces=true;
+		Unit unit2=new Unit(map,50,0){
+			@Override
+			public void tick(double delta){
+			}
+		};
+		unit2.size=20;
+		unit2.collides=true;
+		unit2.pierces=false;
+
+		tickMap(100,0.1);	//simulate engine for 10 second
+		assertEquals("Unit coordinate is unexpected after piercing movement", 125-unit.size/2, unit.xPos,0.01);
 	}
 
 	@Test
