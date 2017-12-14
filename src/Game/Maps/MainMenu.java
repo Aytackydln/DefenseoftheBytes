@@ -8,6 +8,7 @@ import Game.Main;
 public class MainMenu extends Map{
 	public MainMenu(){
 		super(300, 400);
+		name="Main menu";
 		new Button(this,-100,-140,200,120,"Load Tutorial Map"){
 			@Override
 			public void onClick(){
@@ -21,6 +22,6 @@ public class MainMenu extends Map{
 			}
 		};
 
-		Camera.cam.moveTo(-width/2-5,-height/2-5);
+		Camera.cam.chanePos(-width/2-5,-height/2-5);
 	}
 }

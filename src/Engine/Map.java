@@ -7,6 +7,7 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class Map{
+	public String name="";
 	public int width=250, height=250;
 	public final ArrayList<Unit> staticUnits=new ArrayList<>();
 	public final ArrayList<Unit> unitsToAdd=new ArrayList<>();

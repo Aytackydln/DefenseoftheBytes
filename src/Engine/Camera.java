@@ -19,7 +19,7 @@ public class Camera{
 		this.yPos=yPos;
 	}
 
-	public void moveTo(double x, double y){
+	public void chanePos(double x, double y){
 		this.xPos=x;
 		this.yPos=y;
 	}
@@ -29,7 +29,7 @@ public class Camera{
 		yPos+=y;
 	}
 
-	public void chanceScale(double delta){
+	public void zoom(double delta){
 		viewLength+=delta;
 		updateScales();
 	}

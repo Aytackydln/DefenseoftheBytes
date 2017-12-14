@@ -54,7 +54,7 @@ public class Player extends Unit{
 			attackWait=attackTime;
 		}
 
-		Main.engine.camera.moveTo(xPos-Camera.cam.getFrameWidth()/(2*Camera.cam.viewScale),yPos-Camera.cam.getFrameHeight()/(2*Camera.cam.viewScale));
+		Main.engine.camera.chanePos(xPos-Camera.cam.getFrameWidth()/(2*Camera.cam.viewScale),yPos-Camera.cam.getFrameHeight()/(2*Camera.cam.viewScale));
 
 		attackWait-=delta;
 		rotation=Math.atan2(Main.engine.mouseY-getScreenYPos(),Main.engine.mouseX-getScreenXPos());

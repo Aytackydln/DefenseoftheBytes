@@ -24,7 +24,7 @@ public class Main extends Engine{
 		variables.add("playerName");
 		if(playerName==null)playerName="Nameless";
 		main=this;
-		map=new MainMenu();
+		loadMap(new MainMenu());
 	}
 
 	@Override
@@ -35,6 +35,11 @@ public class Main extends Engine{
 
 	@Override
 	protected void reset(){
+
+	}
+
+	@Override
+	protected void initialize(){
 
 	}
 

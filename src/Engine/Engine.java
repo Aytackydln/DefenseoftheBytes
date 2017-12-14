@@ -174,6 +174,7 @@ public abstract class Engine extends JPanel {
 	}
 
 	public void run(){
+		initialize();
 
 		long lastUpdateTime=System.nanoTime();
 		long previousUpdateTime;
@@ -295,12 +296,14 @@ public abstract class Engine extends JPanel {
 
 	public void loadMap(Map map){
 		this.map=map;
+		frame.setTitle(map.name);
 	}
 
 
 
 	protected abstract void gameCodes();
 	protected abstract void reset();
+	protected abstract void initialize();
 
 	/**
 	 * add resolutions as:

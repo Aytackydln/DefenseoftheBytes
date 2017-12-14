@@ -30,8 +30,8 @@ public class ComboListener implements KeyListener, ActionListener, ItemListener,
 		else if(a==KeyEvent.VK_NUMPAD4) engine.camera.move(-2, 0);
 		else if(a==KeyEvent.VK_NUMPAD8) engine.camera.move(0, -2);
 		else if(a==KeyEvent.VK_NUMPAD2) engine.camera.move(0, 2);
-		else if(a==KeyEvent.VK_NUMPAD9) engine.camera.chanceScale(5);
-		else if(a==KeyEvent.VK_NUMPAD3) engine.camera.chanceScale(-5);
+		else if(a==KeyEvent.VK_NUMPAD9) engine.camera.zoom(5);
+		else if(a==KeyEvent.VK_NUMPAD3) engine.camera.zoom(-5);
 	}
 
 	@Override
