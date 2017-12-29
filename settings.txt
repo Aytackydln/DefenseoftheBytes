@@ -2,4 +2,4 @@ debug=true
 fps=0
 ups=0
 playerName=Nameless
-testVariable=something14
+testVariable=something2
