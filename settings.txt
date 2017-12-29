@@ -1,4 +1,5 @@
 debug=true
-fps=64
-ups=128
+fps=0
+ups=0
 playerName=Nameless
+testVariable=something14
